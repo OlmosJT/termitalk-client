@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version "8.1.1"
+}
+
+group = 'io.olmosjt'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+application {
+    mainClass = 'io.olmosjt.client.TermiTalkClient'
+}
+
+dependencies {
+    implementation 'com.googlecode.lanterna:lanterna:3.1.2'
+
+}
+
+run {
+    standardInput = System.in
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveBaseName = 'termitalk-client'
+    archiveClassifier = ''
+    archiveVersion = '1.0'
+}
