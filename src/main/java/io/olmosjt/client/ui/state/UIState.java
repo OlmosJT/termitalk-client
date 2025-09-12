@@ -1,8 +1,8 @@
-package io.olmosjt.client;
+package io.olmosjt.client.ui.state;
 
 public enum UIState {
   LOGIN,
   LOBBY,
-  IN_CHANNEL,
+  IN_ROOM,
   QUIT
 }
