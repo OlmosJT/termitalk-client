@@ -51,6 +51,11 @@ public class TermiTalkClient implements UIView {
   private final List<String> channelMessages = new ArrayList<>();
   private String chatInput = "";
 
+  // Transient feedback/status area
+  private String feedbackText = null;
+  private boolean feedbackIsError = false;
+  private long feedbackAt = 0L;
+
   public static void main(String[] args) throws IOException {
     NetworkService networkService = new SocketNetworkService();
     ChatClient controller = new ChatClient(networkService);
@@ -160,6 +165,13 @@ public class TermiTalkClient implements UIView {
     this.currentChannelName = channelName;
     this.currentChannelId = channelId;
     this.channelMessages.clear(); // Clear old messages
+  }
+
+  @Override
+  public void showFeedback(String text, boolean isError) {
+    this.feedbackText = text;
+    this.feedbackIsError = isError;
+    this.feedbackAt = System.currentTimeMillis();
   }
 
   // This method can be reused from the original draft
@@ -294,6 +306,7 @@ public class TermiTalkClient implements UIView {
 
     drawMainFrame(g, size);
     drawStatusBar(g, size);
+    drawFeedbackBar(g, size);
 
     switch (currentState) {
       case LOGIN -> drawLoginScreen(g, size);
@@ -441,6 +454,35 @@ public class TermiTalkClient implements UIView {
     }
 
     g.putString(size.getColumns() - status.length() - 2, 1, status);
+  }
+
+  private void drawFeedbackBar(TextGraphics g, TerminalSize size) {
+    // Draw a single-line feedback just above the footer divider in Lobby/Login
+    // In Room view, draw higher to avoid colliding with the chat input line.
+    int y = (currentState == UIState.IN_ROOM) ? (size.getRows() - 6) : (size.getRows() - 4);
+    // Auto-clear after 4 seconds (except connection errors)
+    if (feedbackText != null && !(loginError != null && loginError.startsWith("ERROR: Connection"))) {
+      if (System.currentTimeMillis() - feedbackAt > 4000) {
+        feedbackText = null;
+      }
+    }
+
+    // Clear the line
+    String blank = " ".repeat(Math.max(0, size.getColumns() - 4));
+    g.putString(2, y, blank);
+
+    if (feedbackText != null && !feedbackText.isBlank()) {
+      if (feedbackIsError) {
+        g.setForegroundColor(TextColor.ANSI.RED);
+      } else {
+        g.setForegroundColor(TextColor.ANSI.GREEN);
+      }
+      String text = feedbackText.length() > size.getColumns() - 4
+              ? feedbackText.substring(0, size.getColumns() - 4)
+              : feedbackText;
+      g.putString(2, y, text);
+      g.setForegroundColor(TextColor.ANSI.DEFAULT);
+    }
   }
 
   private void drawFooterBar(TextGraphics g, TerminalSize size) {

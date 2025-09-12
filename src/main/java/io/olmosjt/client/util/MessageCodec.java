@@ -19,7 +19,7 @@ public final class MessageCodec {
    */
   public static Optional<Message> decode(String rawMessage) {
     if (rawMessage == null || rawMessage.isBlank()) {
-      return null;
+      return Optional.empty();
     }
 
     String[] parts = rawMessage.split(DELIMITER_REGEX, 4);

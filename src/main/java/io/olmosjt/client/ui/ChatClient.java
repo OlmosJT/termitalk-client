@@ -86,7 +86,7 @@ public class ChatClient implements UIController, MessageListener {
 
     if (roomId.isEmpty()) {
       if (view != null) {
-        view.addMessage(new Message(MessageType.NOK, "CLIENT", "", "Invalid Room ID format.", Instant.now()));
+        view.showFeedback("Invalid Room ID format.", true);
       }
       return;
     }
@@ -170,19 +170,29 @@ public class ChatClient implements UIController, MessageListener {
                   .filter(s -> !s.isEmpty())
                   .collect(Collectors.toList());
           view.updateRoomList(rooms);
-        } else if (content.startsWith("Joined room:")) {
+        } else if (content.startsWith("Joined room '")) {
           Pattern pattern = Pattern.compile("'([^']*)'");
           Matcher matcher = pattern.matcher(content);
           String roomName = matcher.find() ? matcher.group(1) : "Unknown";
 
           view.setRoomDetails(roomName, pendingRoomId);
-
           view.showState(UIState.IN_ROOM);
-
           pendingRoomId = null;
-        } else if (content.equals("You have left the room.")) {
+        } else if (content.contains("has joined the room.")) {
+          // Server notifies join event; show as feedback in lobby
+          view.showFeedback(content, false);
+        } else if (content.startsWith("Room '") && content.contains(" created")) {
+          // Room created message
+          view.showFeedback(content, false);
+          requestRoomList();
+        } else if (content.equals("You have left the room.")
+                || content.contains("has left the room.")
+                || content.startsWith("Left room '")
+                || content.startsWith("You have left '")
+        ) {
           view.showState(UIState.LOBBY);
         } else {
+          // Default: show as a regular message (for in-room context)
           view.addMessage(message);
         }
         break;
@@ -194,8 +204,8 @@ public class ChatClient implements UIController, MessageListener {
       // Most likely a failed login attempt
       view.showLoginError(message.content());
     } else {
-      // Show other errors as a system message
-      view.addMessage(message);
+      // Show other errors as feedback (visible in Lobby or Channel)
+      view.showFeedback(message.content(), true);
     }
   }
 }

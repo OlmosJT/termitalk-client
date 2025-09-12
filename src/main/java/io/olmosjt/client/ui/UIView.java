@@ -14,4 +14,11 @@ public interface UIView {
   void showLoginError(String reason);
   void setRoomDetails(String channelName, String channelId);
   void drawInitialConnectionError();
+
+  /**
+   * Displays a transient feedback/status message in the UI.
+   * @param text The feedback text
+   * @param isError If true, draw it in error style
+   */
+  void showFeedback(String text, boolean isError);
 }

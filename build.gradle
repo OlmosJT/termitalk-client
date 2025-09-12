@@ -17,7 +17,7 @@ java {
 }
 
 application {
-    mainClass = 'io.olmosjt.client.TermiTalkClient'
+    mainClass = 'io.olmosjt.client.ui.TermiTalkClient'
 }
 
 dependencies {
